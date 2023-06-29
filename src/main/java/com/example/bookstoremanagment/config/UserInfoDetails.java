@@ -1,31 +1,32 @@
 package com.example.bookstoremanagment.config;
 
 import com.example.bookstoremanagment.entity.UserEntity;
-import com.example.bookstoremanagment.entity.UserRole;
+import com.example.bookstoremanagment.entity.UserRoleXref;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
 public class UserInfoDetails implements UserDetails {
 
     private static final long serialVersionUID = 1L;
-    private UserRole userRole;
+    private UserRoleXref userRoleXref;
 
     private String username;
     private String password;
     List<GrantedAuthority> authorities;
-    public UserInfoDetails(UserEntity userEntity, List<UserRole> userRoles){
+    public UserInfoDetails(UserEntity userEntity, List<UserRoleXref> userRoleXrefs){
         username= userEntity.getUsername();
         password= userEntity.getPassword();
-        authorities = userRoles.stream()
-                .map(userRole -> new SimpleGrantedAuthority(userRole.getRole().getName().toString()))
-                .collect(Collectors.toList());
+        authorities= userRoleXrefs.stream().map(userRoleXref -> new SimpleGrantedAuthority(userRoleXref.getRole().getRoleName().toString())).collect(Collectors.toList());
 
+        System.out.println("authorities: "+authorities);
     }
 
     @Override

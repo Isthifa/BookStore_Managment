@@ -1,11 +1,14 @@
 package com.example.bookstoremanagment.service;
 
+import com.example.bookstoremanagment.dto.UserDTO;
+import com.example.bookstoremanagment.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -17,6 +20,9 @@ public class JwtService {
 
     @Value("${jwt.secret}")
     private String SECRET;
+    @Value("${jwt.authorities.key}")
+    public String AUTHORITIES_KEY;
+
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -36,7 +42,7 @@ public class JwtService {
                 .parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
     }
     private Boolean isTokenExpired(String token) {
@@ -48,10 +54,11 @@ public class JwtService {
         return (Username.equals(username) && !isTokenExpired(token));
     }
 
-    public String genrateToken(String username) {
+    public String genrateToken(Authentication authentication) {
         return Jwts
                 .builder()
-                .setSubject(username)
+                .setSubject(authentication.getName())
+                .claim("authorities", authentication.getAuthorities())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000*60*30))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)

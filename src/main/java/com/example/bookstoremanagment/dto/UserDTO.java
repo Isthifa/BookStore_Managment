@@ -26,7 +26,6 @@ public class UserDTO {
             message = "password must contain at least 8 characters,one uppercase,one lowercase,one digit and one special character")
     private String password;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(nullable = false)
-//    private Role.RoleType roleName;
+    @Enumerated(EnumType.STRING)
+    private Role.RoleType roleName;
 }

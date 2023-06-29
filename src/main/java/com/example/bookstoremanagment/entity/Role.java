@@ -17,9 +17,10 @@ import java.io.Serializable;
 @Builder
 @Entity
 public class Role extends BaseModel implements Serializable {
-    public enum RoleType{USER,AUTHOR}
+
+    public enum RoleType{ROLE_USER,ROLE_AUTHOR,ROLE_ADMIN}
 
         @Enumerated(EnumType.STRING)
-        @Column(nullable = false)
-        private RoleType name;
+        @Column(nullable = false,unique = true)
+        private RoleType roleName;
 }

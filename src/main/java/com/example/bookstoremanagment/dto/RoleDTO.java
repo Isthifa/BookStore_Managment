@@ -19,5 +19,5 @@ import java.util.Optional;
 public class RoleDTO {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role.RoleType name;
+    private Role.RoleType roleName;
 }

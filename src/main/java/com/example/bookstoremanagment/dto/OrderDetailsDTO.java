@@ -1,17 +1,19 @@
 package com.example.bookstoremanagment.dto;
 
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+import java.util.List;
+
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class AuthRequest {
-    @Size(min = 4,max = 20)
-    private String username;
-    private String password;
+@Data
+public class OrderDetailsDTO {
+    private String userName;
+    private String authorName;
+    private List<String> bookTitle;
+    private Double bookPrice;
 }
