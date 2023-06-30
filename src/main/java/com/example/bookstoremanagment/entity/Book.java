@@ -16,7 +16,7 @@ import java.io.Serializable;
 @Builder
 public class Book extends BaseModel implements Serializable {
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String title;
     @Column(nullable = false)
     private String authorName;

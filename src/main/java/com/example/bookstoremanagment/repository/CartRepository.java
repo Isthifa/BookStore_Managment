@@ -4,6 +4,7 @@ import com.example.bookstoremanagment.entity.Book;
 import com.example.bookstoremanagment.entity.Cart;
 import com.example.bookstoremanagment.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -21,4 +22,15 @@ public interface CartRepository extends JpaRepository<Cart, UUID>{
     void deleteByUserEntityId(UUID id);
 
     List<Cart> findByUserEntityId(UUID id);
+
+    @Query("select c.book from Cart c where c.userEntity.username =:name and c.book.title=:bookTitle")
+    Optional<Book> findByUserEntityNameAndBookName(String name,String bookTitle);
+
+
+    void deleteByUserEntity_UsernameAndBook_Title(String userName, String bookTitle);
+
+    void deleteByBook_Title(String title);
+
+    @Query("SELECT o.book FROM Cart o WHERE o.quantity = (SELECT MAX(c.quantity) FROM Cart c)")
+    List<Book> findMostSoldBook();
 }

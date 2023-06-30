@@ -26,4 +26,5 @@ public class Cart extends BaseModel implements Serializable{
 
     @Column(nullable = false)
     private long quantity;
+
 }

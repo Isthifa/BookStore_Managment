@@ -4,7 +4,9 @@ import com.example.bookstoremanagment.dto.*;
 import com.example.bookstoremanagment.entity.*;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface Services {
@@ -29,5 +31,19 @@ public interface Services {
 
 //    OrderDetailsDTO fetchOrderDetails(String username);
     void deleteByUserName(String name);
+
+    void updateCategory(String cname,String catName);
+
+    void CancelTheOrder(String username,String bookTitle);
+
+    void deleteCartDataByUserAndBookName(String userName,String bookTitle);
+
+    void CartQuantityUpdateByUser(String userName,String bookTitle,long quantity);
+
+    void deleteBookByTitle(String title);
+
+    List<MostSellDTO> mostSellBook();
+
+    Map<String,String> BookByDateRange(LocalDate startDate,LocalDate endDate);
 
 }

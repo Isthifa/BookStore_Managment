@@ -18,4 +18,6 @@ public interface BookCategoriesXrefRepository extends JpaRepository<BookCategori
     void deleteBy();
 
     void deleteByCategoriesId(UUID id);
+
+    void deleteByBook_Title(String title);
 }

@@ -15,9 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -123,10 +122,11 @@ public class ServicesImpl implements Services {
 //                bookCategoriesXrefRepository.findByCategoriesCatName(catType,pageable);
 //        Page<Book> bookpage=bookCategoriesXrefRepository.findByCategoriesCatName(catType,pageable);
 //        BookDetailsDTO bookDetailsDTO=modelMapper.map(bookpage,BookDetailsDTO.class);
-        List<Book> books=bookCategoriesXrefRepository.findByCategoriesCatName(catType);
-        List<BookDetailsDTO> bookDetailsDTOS=new ArrayList<>();
+        List<Book> books = bookCategoriesXrefRepository.findByCategoriesCatName(catType);
+        List<BookDetailsDTO> bookDetailsDTOS = new ArrayList<>();
         for (Book book1 : books) {
             BookDetailsDTO bookDetailsDTO = modelMapper.map(book1, BookDetailsDTO.class);
+            System.out.println(bookDetailsDTO);
             bookDetailsDTOS.add(bookDetailsDTO);
         }
         return bookDetailsDTOS;
@@ -159,20 +159,24 @@ public class ServicesImpl implements Services {
     @Override
     public Orders saveOrder(String userName, String bookTitle, boolean ispaid) {
         Optional<Cart> cart = cartRepository.findByUserEntityAndBook(userName, bookTitle);
-        Optional<List<Book>> books = cartRepository.findByUserEntityCartBook(userName);
-        System.out.println(books.get());
-        if (!cart.isPresent()) {
-            throw new BookNotFoundException("Book not found in Cart");
-        } else {
-            Orders orders = new Orders();
-            orders.setBook(books.get().get(0));
-            orders.setUserEntity(cart.get().getUserEntity());
-            orders.setPaid(ispaid);
-            orders.setQuantity(cart.get().getQuantity());
-            orderRepository.save(orders);
-            return orders;
+//        Optional<List<Book>> books = cartRepository.findByUserEntityCartBook(userName);
+        Optional<Book> book=cartRepository.findByUserEntityNameAndBookName(userName,bookTitle);
+        Optional<Orders> orderss = orderRepository.fetchOrderDataByUsernameAndBookTitle(userName, bookTitle);
+        if (orderss.isPresent()) {
+            throw new BookBadRequestException("Book already in orders");
         }
-    }
+                if (!cart.isPresent() && !orderss.isPresent()) {
+                    throw new BookNotFoundException("Book not found in Cart");
+                }else {
+                        Orders orders = new Orders();
+                        orders.setBook(book.get());
+                        orders.setUserEntity(cart.get().getUserEntity());
+                        orders.setPaid(ispaid);
+                        orders.setQuantity(cart.get().getQuantity());
+                        orderRepository.save(orders);
+                        return orders;
+                    }
+        }
 
     @Override
     public void deleteByUserName(String name) {
@@ -181,6 +185,85 @@ public class ServicesImpl implements Services {
             userRepository.deleteByUsername(userEntity.get().getUsername());
             userRoleRepository.deleteByUserEntityId(userEntity.get().getId());
         }
+    }
+
+    @Override
+    public void updateCategory(String cname, String catName) {
+        Optional<Categories> categories = categoriesRepository.findByCatName(cname);
+        if (categories.isPresent()) {
+            categories.get().setCatName(catName);
+            categoriesRepository.save(categories.get());
+        } else {
+            throw new RuntimeException("Category not found");
+        }
+    }
+
+    @Override
+    public void CancelTheOrder(String userName,String bookTitle) {
+ Optional<Orders> orders = orderRepository.findByUserEntityName(userName);
+        System.out.println(orders.get());
+        if (orders.isPresent()) {
+            orderRepository.deleteByUserEntity_UsernameAndBook_Title(userName,bookTitle);
+        } else {
+            throw new BookNotFoundException("Order not found");
+        }
+    }
+
+    @Override
+    public void deleteCartDataByUserAndBookName(String userName, String bookTitle) {
+        Optional<Cart> cart = cartRepository.findByUserEntityAndBook(userName, bookTitle);
+        Optional<Orders> orders=orderRepository.fetchOrderDataByUsernameAndBookTitle(userName,bookTitle);
+        if (cart.isPresent() || cart.isPresent()&&orders.isPresent()) {
+            orderRepository.deleteByUserEntity_UsernameAndBook_Title(userName,bookTitle);
+            cartRepository.deleteByUserEntity_UsernameAndBook_Title(userName,bookTitle);
+        } else {
+            throw new BookNotFoundException("Book not found in Cart");
+        }
+    }
+
+    @Override
+    public void CartQuantityUpdateByUser(String userName, String bookTitle, long quantity) {
+        Optional<Cart> cart=cartRepository.findByUserEntityAndBook(userName,bookTitle);
+        if (cart.isPresent()) {
+            cart.get().setQuantity(quantity);
+            cartRepository.save(cart.get());
+        } else {
+            throw new BookNotFoundException("Book not found in Cart");
+        }
+    }
+
+    @Override
+    public void deleteBookByTitle(String title) {
+        Optional<Book> book=bookRepository.findByTitle(title);
+        if (book.isPresent()) {
+            bookRepository.delete(book.get());
+//            bookCategoriesXrefRepository.deleteByBook_Title(title);
+//            cartRepository.deleteByBook_Title(title);
+        } else {
+            throw new BookNotFoundException("Book not found");
+        }
+    }
+
+    @Override
+    public List<MostSellDTO> mostSellBook() {
+        List<Book> books=cartRepository.findMostSoldBook();
+        List<MostSellDTO> mostSellDTOS=new ArrayList<>();
+        for(Book book:books) {
+            MostSellDTO mostSellDTO = new MostSellDTO();
+            mostSellDTO.setBookTitle(book.getTitle());
+            mostSellDTOS.add(mostSellDTO);
+        }
+        return mostSellDTOS;
+    }
+
+    @Override
+    public Map<String, String> BookByDateRange(LocalDate startDate,LocalDate endDate) {
+        Map<String,String> map=new HashMap<>();
+        List<Object[]> orders=orderRepository.findOrdersAndUsersByDateRange(startDate,endDate);
+        for(Object[] order:orders) {
+            map.put("Output","Book Title: " + order[0] + " User Name: " + order[1] + " Order Date: " + order[2]);
+        }
+        return map;
     }
 }
 
